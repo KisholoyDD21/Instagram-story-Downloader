@@ -8,6 +8,10 @@
 ![Live App](https://img.shields.io/badge/Live%20App-Online-brightgreen?style=for-the-badge&logo=render)
 ![License](https://img.shields.io/badge/License-MIT-green?style=for-the-badge)
 
+<br/>
+
+![InstaDown Banner](doc/banner.png)
+
 ---
 
 ## ✨ Features

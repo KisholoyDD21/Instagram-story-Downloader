@@ -10,11 +10,6 @@ __pycache__/
 
 # Temporary downloads and cached instaloader files
 instadown_*
-*.mp4
-*.jpg
-*.jpeg
-*.png
-*.json
 
 # OS files
 .DS_Store
