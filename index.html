@@ -1,0 +1,1036 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>InstaDown — Reels & Stories Downloader</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;1,9..40,300&display=swap" rel="stylesheet">
+<style>
+/* ─── RESET & BASE ─────────────────────────────────────────── */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --bg:        #08080f;
+  --surface:   #0f0f1a;
+  --card:      #13131f;
+  --border:    rgba(255,255,255,0.06);
+  --border-h:  rgba(255,255,255,0.12);
+  --txt:       #e8e8f0;
+  --txt-dim:   rgba(232,232,240,0.45);
+  --txt-muted: rgba(232,232,240,0.25);
+
+  /* Instagram gradient */
+  --ig1: #f09433;
+  --ig2: #e6683c;
+  --ig3: #dc2743;
+  --ig4: #cc2366;
+  --ig5: #bc1888;
+
+  --grad: linear-gradient(135deg, var(--ig1), var(--ig2), var(--ig3), var(--ig4), var(--ig5));
+  --grad-text: linear-gradient(90deg, #f09433, #e6683c, #dc2743, #cc2366, #bc1888);
+
+  --radius: 20px;
+  --radius-sm: 12px;
+  --glow: 0 0 60px rgba(220, 39, 67, 0.15);
+
+  --font-head: 'Syne', sans-serif;
+  --font-body: 'DM Sans', sans-serif;
+}
+
+html { scroll-behavior: smooth; }
+
+body {
+  font-family: var(--font-body);
+  background: var(--bg);
+  color: var(--txt);
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+/* ─── GRAIN OVERLAY ────────────────────────────────────────── */
+body::before {
+  content: '';
+  position: fixed; inset: 0;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.03'/%3E%3C/svg%3E");
+  opacity: 0.4;
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* ─── AMBIENT BLOBS ────────────────────────────────────────── */
+.blob {
+  position: fixed;
+  border-radius: 50%;
+  filter: blur(120px);
+  opacity: 0.12;
+  pointer-events: none;
+  z-index: 0;
+  animation: drift 18s ease-in-out infinite alternate;
+}
+.blob-1 {
+  width: 600px; height: 600px;
+  background: #dc2743;
+  top: -200px; left: -100px;
+  animation-delay: 0s;
+}
+.blob-2 {
+  width: 500px; height: 500px;
+  background: #bc1888;
+  bottom: -150px; right: -100px;
+  animation-delay: -6s;
+}
+.blob-3 {
+  width: 350px; height: 350px;
+  background: #f09433;
+  top: 40%; left: 50%;
+  transform: translate(-50%, -50%);
+  animation-delay: -12s;
+  opacity: 0.07;
+}
+
+@keyframes drift {
+  from { transform: translate(0, 0) scale(1); }
+  to   { transform: translate(30px, 20px) scale(1.05); }
+}
+
+/* ─── LAYOUT ───────────────────────────────────────────────── */
+.container {
+  position: relative;
+  z-index: 1;
+  max-width: 780px;
+  margin: 0 auto;
+  padding: 0 24px;
+}
+
+/* ─── HEADER ───────────────────────────────────────────────── */
+header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 28px 0 0;
+}
+
+.logo {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  text-decoration: none;
+}
+
+.logo-icon {
+  width: 40px; height: 40px;
+  border-radius: 10px;
+  background: var(--grad);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 20px;
+  flex-shrink: 0;
+  box-shadow: 0 4px 20px rgba(220,39,67,0.35);
+}
+
+.logo-text {
+  font-family: var(--font-head);
+  font-weight: 800;
+  font-size: 1.25rem;
+  letter-spacing: -0.5px;
+}
+
+.logo-text span {
+  background: var(--grad-text);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.badge {
+  font-family: var(--font-body);
+  font-size: 0.7rem;
+  font-weight: 500;
+  padding: 5px 12px;
+  border: 1px solid var(--border);
+  border-radius: 100px;
+  color: var(--txt-dim);
+  letter-spacing: 0.5px;
+}
+
+/* ─── HERO ─────────────────────────────────────────────────── */
+.hero {
+  text-align: center;
+  padding: 80px 0 60px;
+}
+
+.hero-eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.78rem;
+  font-weight: 500;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  color: var(--txt-dim);
+  margin-bottom: 24px;
+}
+
+.hero-eyebrow::before,
+.hero-eyebrow::after {
+  content: '';
+  width: 30px; height: 1px;
+  background: var(--border-h);
+}
+
+.hero h1 {
+  font-family: var(--font-head);
+  font-weight: 800;
+  font-size: clamp(2.4rem, 6vw, 3.8rem);
+  line-height: 1.05;
+  letter-spacing: -2px;
+  margin-bottom: 20px;
+}
+
+.hero h1 .grad {
+  background: var(--grad-text);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.hero p {
+  font-size: 1.05rem;
+  font-weight: 300;
+  color: var(--txt-dim);
+  line-height: 1.7;
+  max-width: 480px;
+  margin: 0 auto 48px;
+}
+
+/* ─── PILL TAGS ────────────────────────────────────────────── */
+.tags {
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-bottom: 0;
+}
+
+.tag {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 14px;
+  border-radius: 100px;
+  border: 1px solid var(--border);
+  font-size: 0.8rem;
+  color: var(--txt-dim);
+  background: rgba(255,255,255,0.02);
+}
+
+.tag-dot {
+  width: 6px; height: 6px;
+  border-radius: 50%;
+  background: var(--grad);
+  flex-shrink: 0;
+}
+
+/* ─── MAIN CARD ────────────────────────────────────────────── */
+.card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 36px;
+  margin-bottom: 32px;
+  box-shadow: var(--glow), 0 0 0 1px rgba(255,255,255,0.02);
+  transition: border-color 0.3s;
+}
+
+.card:hover {
+  border-color: var(--border-h);
+}
+
+/* ─── INPUT GROUP ──────────────────────────────────────────── */
+.input-label {
+  font-size: 0.8rem;
+  font-weight: 500;
+  color: var(--txt-dim);
+  letter-spacing: 0.5px;
+  margin-bottom: 12px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.input-wrap {
+  position: relative;
+  display: flex;
+  gap: 10px;
+  align-items: stretch;
+}
+
+.input-icon {
+  position: absolute;
+  left: 18px; top: 50%;
+  transform: translateY(-50%);
+  color: var(--txt-muted);
+  pointer-events: none;
+  z-index: 2;
+  font-size: 16px;
+}
+
+input[type="text"] {
+  flex: 1;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  color: var(--txt);
+  font-family: var(--font-body);
+  font-size: 0.95rem;
+  padding: 16px 18px 16px 46px;
+  outline: none;
+  transition: border-color 0.2s, box-shadow 0.2s;
+  min-width: 0;
+}
+
+input[type="text"]::placeholder { color: var(--txt-muted); }
+
+input[type="text"]:focus {
+  border-color: rgba(220,39,67,0.5);
+  box-shadow: 0 0 0 3px rgba(220,39,67,0.1);
+}
+
+.btn-fetch {
+  flex-shrink: 0;
+  padding: 0 28px;
+  border-radius: var(--radius-sm);
+  border: none;
+  background: var(--grad);
+  color: #fff;
+  font-family: var(--font-body);
+  font-weight: 500;
+  font-size: 0.95rem;
+  cursor: pointer;
+  transition: opacity 0.2s, transform 0.15s, box-shadow 0.2s;
+  box-shadow: 0 4px 24px rgba(220,39,67,0.3);
+  white-space: nowrap;
+}
+
+.btn-fetch:hover { opacity: 0.9; transform: translateY(-1px); box-shadow: 0 6px 30px rgba(220,39,67,0.4); }
+.btn-fetch:active { transform: translateY(0); }
+.btn-fetch:disabled { opacity: 0.4; cursor: not-allowed; transform: none; }
+
+.hint {
+  margin-top: 12px;
+  font-size: 0.78rem;
+  color: var(--txt-muted);
+}
+
+/* ─── DIVIDER ──────────────────────────────────────────────── */
+.divider {
+  display: flex; align-items: center; gap: 16px;
+  margin: 28px 0;
+}
+.divider::before,
+.divider::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: var(--border);
+}
+.divider span {
+  font-size: 0.75rem;
+  color: var(--txt-muted);
+  letter-spacing: 0.5px;
+  white-space: nowrap;
+}
+
+/* ─── RESULT PANEL ─────────────────────────────────────────── */
+#result-panel {
+  display: none;
+  animation: fadeUp 0.35s ease;
+}
+
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(16px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.result-grid {
+  display: grid;
+  grid-template-columns: 160px 1fr;
+  gap: 24px;
+  align-items: start;
+}
+
+@media (max-width: 540px) {
+  .result-grid { grid-template-columns: 1fr; }
+}
+
+.thumb-wrap {
+  aspect-ratio: 1;
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  position: relative;
+}
+
+.thumb-wrap img {
+  width: 100%; height: 100%;
+  object-fit: cover;
+  display: block;
+  transition: transform 0.4s;
+}
+
+.thumb-wrap:hover img { transform: scale(1.04); }
+
+.media-badge {
+  position: absolute;
+  bottom: 8px; left: 8px;
+  background: rgba(0,0,0,0.7);
+  backdrop-filter: blur(8px);
+  border-radius: 6px;
+  padding: 3px 8px;
+  font-size: 0.7rem;
+  font-weight: 500;
+  display: flex; align-items: center; gap: 4px;
+}
+
+.result-meta { min-width: 0; }
+
+.result-owner {
+  font-family: var(--font-head);
+  font-weight: 700;
+  font-size: 1.1rem;
+  margin-bottom: 6px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.result-owner span {
+  background: var(--grad-text);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.result-caption {
+  font-size: 0.85rem;
+  color: var(--txt-dim);
+  line-height: 1.6;
+  margin-bottom: 16px;
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.result-stats {
+  display: flex;
+  gap: 16px;
+  margin-bottom: 20px;
+  flex-wrap: wrap;
+}
+
+.stat {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 0.8rem;
+  color: var(--txt-dim);
+}
+
+.stat svg { opacity: 0.6; }
+
+.btn-download {
+  width: 100%;
+  padding: 14px 24px;
+  border-radius: var(--radius-sm);
+  border: none;
+  background: var(--grad);
+  color: #fff;
+  font-family: var(--font-body);
+  font-weight: 600;
+  font-size: 0.95rem;
+  cursor: pointer;
+  transition: opacity 0.2s, transform 0.15s, box-shadow 0.2s;
+  box-shadow: 0 4px 24px rgba(220,39,67,0.3);
+  display: flex; align-items: center; justify-content: center; gap: 8px;
+}
+
+.btn-download:hover { opacity: 0.9; transform: translateY(-1px); box-shadow: 0 8px 32px rgba(220,39,67,0.4); }
+.btn-download:active { transform: translateY(0); }
+.btn-download:disabled { opacity: 0.45; cursor: not-allowed; transform: none; }
+
+/* ─── LOADING STATES ───────────────────────────────────────── */
+.spinner {
+  width: 18px; height: 18px;
+  border: 2px solid rgba(255,255,255,0.3);
+  border-top-color: #fff;
+  border-radius: 50%;
+  animation: spin 0.7s linear infinite;
+  display: inline-block;
+}
+
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* ─── ERROR ────────────────────────────────────────────────── */
+.error-box {
+  background: rgba(220,39,67,0.07);
+  border: 1px solid rgba(220,39,67,0.2);
+  border-radius: var(--radius-sm);
+  padding: 14px 18px;
+  font-size: 0.88rem;
+  color: #ff6b7a;
+  display: flex; align-items: flex-start; gap: 10px;
+  animation: fadeUp 0.3s ease;
+}
+
+.error-icon { flex-shrink: 0; margin-top: 1px; }
+
+/* ─── PROGRESS BAR ─────────────────────────────────────────── */
+.progress-wrap {
+  height: 3px;
+  background: var(--border);
+  border-radius: 100px;
+  overflow: hidden;
+  margin-top: 14px;
+}
+
+.progress-bar {
+  height: 100%;
+  background: var(--grad);
+  border-radius: 100px;
+  width: 0%;
+  transition: width 0.3s ease;
+  animation: shimmer 1.5s ease-in-out infinite;
+}
+
+@keyframes shimmer {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0.6; }
+}
+
+/* ─── HOW IT WORKS ─────────────────────────────────────────── */
+.steps-section {
+  margin-bottom: 80px;
+}
+
+.section-title {
+  font-family: var(--font-head);
+  font-weight: 700;
+  font-size: 1.4rem;
+  letter-spacing: -0.5px;
+  margin-bottom: 24px;
+  text-align: center;
+}
+
+.section-title span {
+  background: var(--grad-text);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.steps {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+}
+
+@media (max-width: 600px) {
+  .steps { grid-template-columns: 1fr; }
+}
+
+.step {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 28px 24px;
+  transition: border-color 0.3s, transform 0.3s;
+  position: relative;
+  overflow: hidden;
+}
+
+.step::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 2px;
+  background: var(--grad);
+  opacity: 0;
+  transition: opacity 0.3s;
+}
+
+.step:hover {
+  border-color: var(--border-h);
+  transform: translateY(-3px);
+}
+
+.step:hover::before { opacity: 1; }
+
+.step-num {
+  font-family: var(--font-head);
+  font-weight: 800;
+  font-size: 2.5rem;
+  line-height: 1;
+  background: var(--grad-text);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  margin-bottom: 14px;
+}
+
+.step h3 {
+  font-family: var(--font-head);
+  font-weight: 600;
+  font-size: 0.95rem;
+  margin-bottom: 8px;
+}
+
+.step p {
+  font-size: 0.82rem;
+  color: var(--txt-dim);
+  line-height: 1.65;
+}
+
+/* ─── FOOTER ───────────────────────────────────────────────── */
+footer {
+  border-top: 1px solid var(--border);
+  padding: 28px 0;
+  text-align: center;
+}
+
+.footer-inner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.footer-txt {
+  font-size: 0.78rem;
+  color: var(--txt-muted);
+}
+
+.footer-links {
+  display: flex;
+  gap: 20px;
+}
+
+.footer-links a {
+  font-size: 0.78rem;
+  color: var(--txt-muted);
+  text-decoration: none;
+  transition: color 0.2s;
+}
+
+.footer-links a:hover { color: var(--txt-dim); }
+
+/* ─── TOAST ─────────────────────────────────────────────────── */
+.toast {
+  position: fixed;
+  bottom: 28px;
+  right: 28px;
+  background: var(--card);
+  border: 1px solid var(--border-h);
+  border-radius: var(--radius-sm);
+  padding: 14px 20px;
+  font-size: 0.88rem;
+  box-shadow: 0 8px 40px rgba(0,0,0,0.5);
+  z-index: 999;
+  display: flex; align-items: center; gap: 10px;
+  animation: toastIn 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
+  max-width: 320px;
+}
+
+.toast.hide {
+  animation: toastOut 0.3s ease forwards;
+}
+
+@keyframes toastIn {
+  from { opacity: 0; transform: translateY(20px) scale(0.95); }
+  to   { opacity: 1; transform: translateY(0) scale(1); }
+}
+@keyframes toastOut {
+  to { opacity: 0; transform: translateY(8px); }
+}
+
+/* ─── WARNING NOTICE ─────────────────────────────────────────── */
+.notice {
+  background: rgba(240, 148, 51, 0.06);
+  border: 1px solid rgba(240, 148, 51, 0.18);
+  border-radius: var(--radius-sm);
+  padding: 12px 16px;
+  font-size: 0.8rem;
+  color: rgba(240,148,51,0.75);
+  margin-top: 20px;
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+  line-height: 1.6;
+}
+</style>
+</head>
+<body>
+
+<!-- Ambient blobs -->
+<div class="blob blob-1"></div>
+<div class="blob blob-2"></div>
+<div class="blob blob-3"></div>
+
+<div class="container">
+
+  <!-- Header -->
+  <header>
+    <a href="/" class="logo">
+      <div class="logo-icon">📸</div>
+      <span class="logo-text">Insta<span>Down</span></span>
+    </a>
+    <div class="badge">v1.0 · Open Source</div>
+  </header>
+
+  <!-- Hero -->
+  <section class="hero">
+    <div class="hero-eyebrow">No Watermarks. No Signup. Always Free.</div>
+    <h1>Download <span class="grad">Instagram</span><br/>Reels & Posts</h1>
+    <p>Paste any public Instagram Reel or Post link below. We'll fetch the original quality media — no compression, no watermarks.</p>
+
+    <div class="tags">
+      <div class="tag"><div class="tag-dot"></div>Reels</div>
+      <div class="tag"><div class="tag-dot"></div>Posts</div>
+      <div class="tag"><div class="tag-dot"></div>Carousels</div>
+      <div class="tag"><div class="tag-dot"></div>HD Quality</div>
+      <div class="tag"><div class="tag-dot"></div>No Watermark</div>
+    </div>
+  </section>
+
+  <!-- Main Input Card -->
+  <div class="card">
+    <div class="input-label">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
+      Instagram URL
+    </div>
+
+    <div class="input-wrap">
+      <span class="input-icon">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="2" y="2" width="20" height="20" rx="5" ry="5"/><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"/><line x1="17.5" y1="6.5" x2="17.51" y2="6.5"/></svg>
+      </span>
+      <input
+        type="text"
+        id="url-input"
+        placeholder="https://www.instagram.com/reel/..."
+        autocomplete="off"
+        spellcheck="false"
+      />
+      <button class="btn-fetch" id="fetch-btn" onclick="fetchInfo()">
+        Fetch
+      </button>
+    </div>
+
+    <div class="hint">Supports: /reel/ · /p/ · /tv/ &nbsp;|&nbsp; Public posts only</div>
+
+    <!-- Error area -->
+    <div id="error-area" style="margin-top:16px;display:none;"></div>
+
+    <!-- Result Panel -->
+    <div id="result-panel">
+      <div class="divider"><span>MEDIA FOUND</span></div>
+
+      <div class="result-grid">
+        <div class="thumb-wrap">
+          <img id="thumb" src="" alt="Thumbnail" />
+          <div class="media-badge" id="media-badge">
+            <svg width="10" height="10" viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+            <span id="media-type-label">Video</span>
+          </div>
+        </div>
+
+        <div class="result-meta">
+          <div class="result-owner">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align:middle;margin-right:4px"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+            <span id="owner-name">@username</span>
+          </div>
+
+          <div class="result-caption" id="caption-text">—</div>
+
+          <div class="result-stats">
+            <div class="stat">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+              <span id="likes-count">—</span> likes
+            </div>
+            <div class="stat">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+              <span id="quality-label">Original quality</span>
+            </div>
+          </div>
+
+          <button class="btn-download" id="download-btn" onclick="startDownload()">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+            Download Now
+          </button>
+
+          <div class="progress-wrap" id="progress-wrap" style="display:none;">
+            <div class="progress-bar" id="progress-bar" style="width:0%"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Warning notice -->
+    <div class="notice">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="flex-shrink:0;margin-top:1px"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+      Only works on <strong>public accounts</strong>. Stories require login (private by nature). Always respect content creators' rights.
+    </div>
+  </div>
+
+  <!-- How It Works -->
+  <section class="steps-section">
+    <div class="section-title">How It <span>Works</span></div>
+    <div class="steps">
+      <div class="step">
+        <div class="step-num">01</div>
+        <h3>Copy the Link</h3>
+        <p>Open Instagram, tap the share icon on any Reel or Post, and copy the link.</p>
+      </div>
+      <div class="step">
+        <div class="step-num">02</div>
+        <h3>Paste & Fetch</h3>
+        <p>Paste the URL above and click Fetch. We pull metadata directly from Instagram's API.</p>
+      </div>
+      <div class="step">
+        <div class="step-num">03</div>
+        <h3>Download</h3>
+        <p>Hit Download Now and the original-quality file saves straight to your device.</p>
+      </div>
+    </div>
+  </section>
+
+</div>
+
+<!-- Footer -->
+<footer>
+  <div class="container">
+    <div class="footer-inner">
+      <span class="footer-txt">Built with instaloader · Python Flask · Open Source</span>
+      <div class="footer-links">
+        <a href="#">GitHub</a>
+        <a href="#">Privacy</a>
+        <a href="#">Terms</a>
+      </div>
+    </div>
+  </div>
+</footer>
+
+<script>
+// ─── STATE ───────────────────────────────────────────────────
+let currentPost = null;
+let isFetching = false;
+let isDownloading = false;
+
+// ─── ELEMENTS ────────────────────────────────────────────────
+const urlInput    = document.getElementById('url-input');
+const fetchBtn    = document.getElementById('fetch-btn');
+const errorArea   = document.getElementById('error-area');
+const resultPanel = document.getElementById('result-panel');
+const thumb       = document.getElementById('thumb');
+const mediaBadge  = document.getElementById('media-badge');
+const typeLabel   = document.getElementById('media-type-label');
+const ownerName   = document.getElementById('owner-name');
+const captionTxt  = document.getElementById('caption-text');
+const likesCount  = document.getElementById('likes-count');
+const qualityLabel= document.getElementById('quality-label');
+const downloadBtn = document.getElementById('download-btn');
+const progressWrap= document.getElementById('progress-wrap');
+const progressBar = document.getElementById('progress-bar');
+
+// ─── ENTER KEY ────────────────────────────────────────────────
+urlInput.addEventListener('keydown', e => { if (e.key === 'Enter') fetchInfo(); });
+
+// ─── PASTE AUTO-FETCH ─────────────────────────────────────────
+urlInput.addEventListener('paste', () => {
+  setTimeout(() => {
+    const val = urlInput.value.trim();
+    if (val.includes('instagram.com')) fetchInfo();
+  }, 100);
+});
+
+// ─── FETCH INFO ───────────────────────────────────────────────
+async function fetchInfo() {
+  if (isFetching) return;
+  const url = urlInput.value.trim();
+  if (!url) { showError('Please paste an Instagram URL first.'); return; }
+
+  isFetching = true;
+  clearError();
+  hideResult();
+  fetchBtn.disabled = true;
+  fetchBtn.innerHTML = '<span class="spinner"></span>';
+
+  try {
+    const resp = await fetch('/api/info', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ url })
+    });
+    const data = await resp.json();
+
+    if (!resp.ok || data.error) {
+      showError(data.error || 'Failed to fetch post info.');
+      return;
+    }
+
+    currentPost = data;
+    renderResult(data);
+
+  } catch (err) {
+    showError('Network error. Make sure the server is running.');
+  } finally {
+    isFetching = false;
+    fetchBtn.disabled = false;
+    fetchBtn.innerHTML = 'Fetch';
+  }
+}
+
+// ─── RENDER RESULT ────────────────────────────────────────────
+function renderResult(d) {
+  thumb.src = d.thumbnail || '';
+  ownerName.textContent = '@' + d.owner;
+  captionTxt.textContent = d.caption || '(No caption)';
+  likesCount.textContent = d.likes ? d.likes.toLocaleString() : '—';
+
+  const mt = d.media_type;
+  if (mt === 'video') {
+    typeLabel.textContent = 'Reel / Video';
+    qualityLabel.textContent = 'Original MP4';
+  } else if (mt === 'carousel') {
+    typeLabel.textContent = 'Carousel';
+    qualityLabel.textContent = 'Multiple images';
+  } else {
+    typeLabel.textContent = 'Photo';
+    qualityLabel.textContent = 'Original JPG';
+  }
+
+  resultPanel.style.display = 'block';
+  progressWrap.style.display = 'none';
+  downloadBtn.disabled = false;
+  downloadBtn.innerHTML = `
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+      <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+      <polyline points="7 10 12 15 17 10"/>
+      <line x1="12" y1="15" x2="12" y2="3"/>
+    </svg>
+    Download Now
+  `;
+}
+
+// ─── DOWNLOAD ─────────────────────────────────────────────────
+async function startDownload() {
+  if (isDownloading || !currentPost) return;
+  isDownloading = true;
+
+  downloadBtn.disabled = true;
+  downloadBtn.innerHTML = '<span class="spinner"></span> Downloading...';
+  progressWrap.style.display = 'block';
+  progressBar.style.width = '0%';
+
+  // Fake progress animation while waiting for server
+  let prog = 0;
+  const ticker = setInterval(() => {
+    prog = Math.min(prog + Math.random() * 8, 88);
+    progressBar.style.width = prog + '%';
+  }, 200);
+
+  try {
+    const resp = await fetch('/api/download', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ url: urlInput.value.trim() })
+    });
+
+    clearInterval(ticker);
+
+    if (!resp.ok) {
+      const err = await resp.json();
+      showError(err.error || 'Download failed.');
+      resetDownloadBtn();
+      return;
+    }
+
+    progressBar.style.width = '100%';
+
+    // Trigger browser download
+    const blob = await resp.blob();
+    const filename = resp.headers.get('Content-Disposition')?.match(/filename="(.+)"/)?.[1]
+      || `instadown_${currentPost.shortcode}.${currentPost.is_video ? 'mp4' : 'jpg'}`;
+
+    const objUrl = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = objUrl;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    URL.revokeObjectURL(objUrl);
+
+    showToast('✅ Download complete!');
+
+    setTimeout(() => {
+      progressBar.style.width = '0%';
+      progressWrap.style.display = 'none';
+      resetDownloadBtn();
+    }, 1200);
+
+  } catch (err) {
+    clearInterval(ticker);
+    showError('Network error during download. Is the server running?');
+    resetDownloadBtn();
+  } finally {
+    isDownloading = false;
+  }
+}
+
+function resetDownloadBtn() {
+  downloadBtn.disabled = false;
+  downloadBtn.innerHTML = `
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+      <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+      <polyline points="7 10 12 15 17 10"/>
+      <line x1="12" y1="15" x2="12" y2="3"/>
+    </svg>
+    Download Again
+  `;
+}
+
+// ─── UI HELPERS ───────────────────────────────────────────────
+function showError(msg) {
+  errorArea.innerHTML = `
+    <div class="error-box">
+      <svg class="error-icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <circle cx="12" cy="12" r="10"/>
+        <line x1="15" y1="9" x2="9" y2="15"/>
+        <line x1="9" y1="9" x2="15" y2="15"/>
+      </svg>
+      <span>${msg}</span>
+    </div>
+  `;
+  errorArea.style.display = 'block';
+}
+
+function clearError() { errorArea.innerHTML = ''; errorArea.style.display = 'none'; }
+function hideResult()  { resultPanel.style.display = 'none'; currentPost = null; }
+
+// ─── TOAST ────────────────────────────────────────────────────
+function showToast(msg) {
+  const t = document.createElement('div');
+  t.className = 'toast';
+  t.textContent = msg;
+  document.body.appendChild(t);
+  setTimeout(() => {
+    t.classList.add('hide');
+    setTimeout(() => t.remove(), 400);
+  }, 3000);
+}
+</script>
+</body>
+</html>
