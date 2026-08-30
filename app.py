@@ -33,6 +33,25 @@ def extract_shortcode(url: str):
     return None
 
 
+@app.route("/robots.txt")
+def robots():
+    return "User-agent: *\nAllow: /\nSitemap: https://instagram-story-downloader.onrender.com/sitemap.xml\n", 200, {'Content-Type': 'text/plain'}
+
+
+@app.route("/sitemap.xml")
+def sitemap():
+    xml = """<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  <url>
+    <loc>https://instagram-story-downloader.onrender.com/</loc>
+    <lastmod>2026-08-30</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>1.0</priority>
+  </url>
+</urlset>"""
+    return xml, 200, {'Content-Type': 'application/xml'}
+
+
 @app.route("/")
 def index():
     if os.path.exists(os.path.join("templates", "index.html")):
