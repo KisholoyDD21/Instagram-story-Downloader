@@ -52,6 +52,11 @@ def sitemap():
     return xml, 200, {'Content-Type': 'application/xml'}
 
 
+@app.route("/googled6b96ac3b100fcd2.html")
+def google_verify():
+    return "google-site-verification: googled6b96ac3b100fcd2.html", 200, {'Content-Type': 'text/html'}
+
+
 @app.route("/")
 def index():
     if os.path.exists(os.path.join("templates", "index.html")):
