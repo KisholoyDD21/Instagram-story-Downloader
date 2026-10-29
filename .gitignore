@@ -8,8 +8,15 @@ __pycache__/
 *.py[cod]
 *$py.class
 
+# Environment variables & secrets
+.env
+.env.*
+!.env.example
+
 # Temporary downloads and cached instaloader files
 instadown_*
+temp/
+tmp/
 
 # OS files
 .DS_Store
@@ -20,3 +27,10 @@ desktop.ini
 .vscode/
 .idea/
 *.swp
+*.swo
+
+# Test coverage & logs
+*.log
+.pytest_cache/
+.coverage
+htmlcov/

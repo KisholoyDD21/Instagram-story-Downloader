@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <!-- Primary Meta Tags -->
+  <title>{{ title | default('InstaDown — Fast Instagram Reels Downloader & Free HD Video Saver') }}</title>
+  <meta name="title" content="{{ title | default('InstaDown — Fast Instagram Reels Downloader & Free HD Video Saver') }}">
+  <meta name="description" content="{{ meta_description | default('Fast Instagram Reels Downloader, Download IG Videos Online & Free HD Reel Saver. Download Instagram videos, posts, photos, and carousels in original high quality without watermarks.') }}">
+  <meta name="keywords" content="Fast Instagram Reels Downloader, Download IG Videos Online, Free HD Reel Saver, Instagram Video Downloader, Save IG Reels, Instagram Post Downloader, Instagram Carousel Downloader, InstaDown, IG Saver">
+  <meta name="robots" content="index, follow">
+  <meta name="theme-color" content="#08080f">
+
+  <!-- Canonical URL -->
+  <link rel="canonical" href="{{ canonical_url | default('https://instagram-story-downloader.onrender.com/') }}">
+
+  <!-- Google Site Verification -->
+  <meta name="google-site-verification" content="{{ google_verification | default('googled6b96ac3b100fcd2') }}">
+
+  <!-- Open Graph / Facebook -->
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="{{ canonical_url | default('https://instagram-story-downloader.onrender.com/') }}">
+  <meta property="og:title" content="{{ title | default('InstaDown — Fast Instagram Reels Downloader & Free HD Video Saver') }}">
+  <meta property="og:description" content="{{ meta_description | default('Fast Instagram Reels Downloader, Download IG Videos Online & Free HD Reel Saver. Free, watermark-free high-speed downloader.') }}">
+  <meta property="og:site_name" content="InstaDown">
+  <meta property="og:image" content="{{ social_preview_url | default(url_for('static', filename='images/social-preview.png', _external=True)) }}">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta property="og:image:alt" content="InstaDown Instagram Reels Downloader Preview">
+
+  <!-- Twitter -->
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:url" content="{{ canonical_url | default('https://instagram-story-downloader.onrender.com/') }}">
+  <meta name="twitter:title" content="{{ title | default('InstaDown — Fast Instagram Reels Downloader') }}">
+  <meta name="twitter:description" content="{{ meta_description | default('Download IG Videos Online & Free HD Reel Saver. Fast, clean, watermark-free Instagram media saver.') }}">
+  <meta name="twitter:image" content="{{ social_preview_url | default(url_for('static', filename='images/social-preview.png', _external=True)) }}">
+  <meta name="twitter:image:alt" content="InstaDown Media Saver Card">
+
+  <!-- Favicons -->
+  <link rel="icon" type="image/svg+xml" href="{{ url_for('static', filename='images/favicon.svg') }}">
+  <link rel="alternate icon" href="{{ url_for('static', filename='images/favicon.ico') }}">
+  <link rel="apple-touch-icon" sizes="180x180" href="{{ url_for('static', filename='images/apple-touch-icon.png') }}">
+
+  <!-- DNS Prefetch & Preconnect for High Performance -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="dns-prefetch" href="https://fonts.googleapis.com">
+  <link rel="dns-prefetch" href="https://fonts.gstatic.com">
+
+  <!-- Web Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@500;700;800&family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,400&display=swap" rel="stylesheet">
+
+  <!-- Stylesheets -->
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+
+  <!-- Analytics Tag (Consent Aware) -->
+  {% if ga_id %}
+  <script async src="https://www.googletagmanager.com/gtag/js?id={{ ga_id }}"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    // Default consent mode
+    gtag('consent', 'default', {
+      'analytics_storage': 'denied'
+    });
+    if (localStorage.getItem('instadown_cookie_consent') === 'accepted') {
+      gtag('consent', 'update', {
+        'analytics_storage': 'granted'
+      });
+      gtag('config', '{{ ga_id }}');
+    }
+  </script>
+  {% endif %}
+
+  {% block head_extra %}{% endblock %}
+</head>
+<body>
+
+  <!-- Ambient glowing gradient blobs -->
+  <div class="blob blob-1"></div>
+  <div class="blob blob-2"></div>
+  <div class="blob blob-3"></div>
+
+  <div class="container">
+    <!-- Header Navigation -->
+    <header>
+      <a href="/" class="logo" title="InstaDown Homepage">
+        <div class="logo-icon" aria-hidden="true">📸</div>
+        <span class="logo-text">Insta<span>Down</span></span>
+      </a>
+
+      <nav class="nav-links" aria-label="Main Navigation">
+        <a href="/" class="nav-link {% if active_page == 'home' %}active{% endif %}">Home</a>
+        <a href="/#how-it-works" class="nav-link">How It Works</a>
+        <a href="/#faq" class="nav-link">FAQ</a>
+        <a href="/privacy" class="nav-link {% if active_page == 'privacy' %}active{% endif %}">Privacy</a>
+        <a href="/terms" class="nav-link {% if active_page == 'terms' %}active{% endif %}">Terms</a>
+      </nav>
+
+      <a href="https://github.com/KisholoyDD21/Instagram-story-Downloader" target="_blank" rel="noopener noreferrer" class="badge-header" title="GitHub Repository">
+        <span class="badge-dot"></span>
+        <span>v1.0 · GitHub</span>
+      </a>
+    </header>
+
+    <!-- Main Content Block -->
+    <main>
+      {% block content %}{% endblock %}
+    </main>
+  </div>
+
+  <!-- Footer -->
+  <footer>
+    <div class="container">
+      <div class="footer-inner">
+        <span class="footer-txt">Built with Python, Flask & Instaloader · Open Source</span>
+        <div class="footer-links">
+          <a href="https://github.com/KisholoyDD21/Instagram-story-Downloader" target="_blank" rel="noopener noreferrer" title="View Source on GitHub">GitHub</a>
+          <a href="/privacy" title="Privacy Policy">Privacy Policy</a>
+          <a href="/terms" title="Terms and Conditions">Terms & Conditions</a>
+          <a href="/sitemap.xml" title="XML Sitemap">Sitemap</a>
+        </div>
+      </div>
+      <div style="text-align: center; margin-top: 14px; font-size: 0.75rem; color: var(--txt-muted);">
+        © {{ current_year | default(2026) }} InstaDown. Not affiliated with Instagram, Meta Inc. All content rights belong to their respective creators.
+      </div>
+    </div>
+  </footer>
+
+  <!-- Cookie Consent Banner -->
+  <aside id="cookie-banner" class="cookie-banner" role="dialog" aria-label="Cookie and Privacy Consent" style="display: none;">
+    <div class="cookie-text">
+      🍪 <strong>We value your privacy.</strong> We use cookies and local storage for essential session handling and to understand how you interact with our service. Read our <a href="/privacy">Privacy Policy</a> to learn more.
+    </div>
+    <div class="cookie-actions">
+      <button type="button" class="btn-cookie-accept" onclick="acceptAllCookies()">Accept All</button>
+      <button type="button" class="btn-cookie-decline" onclick="declineNonEssentialCookies()">Essential Only</button>
+    </div>
+  </aside>
+
+  <!-- Scripts -->
+  <script src="{{ url_for('static', filename='js/main.js') }}" defer></script>
+  {% block scripts %}{% endblock %}
+
+</body>
+</html>
