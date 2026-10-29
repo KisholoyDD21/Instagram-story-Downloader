@@ -57,8 +57,8 @@
   <!-- Web Fonts -->
   <link href="https://fonts.googleapis.com/css2?family=Syne:wght@500;700;800&family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,400&display=swap" rel="stylesheet">
 
-  <!-- Stylesheets -->
-  <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+  <!-- Stylesheet with Cache Busting -->
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}?v=1.2">
 
   <!-- Analytics Tag (Consent Aware) -->
   {% if ga_id %}
@@ -89,7 +89,14 @@
     <!-- Header Navigation -->
     <header>
       <a href="/" class="logo" title="InstaDown Homepage">
-        <div class="logo-icon" aria-hidden="true">📸</div>
+        <!-- Professional Custom SVG Camera Logo Icon (Replacing Emoji) -->
+        <div class="logo-icon" aria-label="InstaDown Camera Logo">
+          <svg viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="2" y="2" width="20" height="20" rx="5.5" ry="5.5"></rect>
+            <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"></path>
+            <line x1="17.5" y1="6.5" x2="17.51" y2="6.5" stroke-width="2.8"></line>
+          </svg>
+        </div>
         <span class="logo-text">Insta<span>Down</span></span>
       </a>
 
@@ -114,7 +121,7 @@
 
         <a href="https://github.com/KisholoyDD21/Instagram-story-Downloader" target="_blank" rel="noopener noreferrer" class="badge-header" title="GitHub Repository">
           <span class="badge-dot"></span>
-          <span>v1.1 · GitHub</span>
+          <span>v1.2 · GitHub</span>
         </a>
       </div>
     </header>
@@ -157,7 +164,7 @@
   </aside>
 
   <!-- Recent Downloads Drawer (100% Client-Side / Private) -->
-  <div class="drawer-overlay" id="drawer-overlay" onclick="toggleHistoryDrawer()"></div>
+  <div class="drawer-overlay" id="drawer-overlay" onclick="toggleHistoryDrawer()" style="display: none;"></div>
   <aside class="history-drawer" id="history-drawer" role="complementary" aria-label="Recent Downloads History">
     <div class="drawer-header">
       <div class="drawer-title">
@@ -186,7 +193,7 @@
   </aside>
 
   <!-- Send to Mobile QR Code Modal -->
-  <div class="modal-overlay" id="qr-modal-overlay" onclick="closeQrModal()">
+  <div class="modal-overlay" id="qr-modal-overlay" onclick="closeQrModal()" style="display: none;">
     <div class="modal-card" onclick="event.stopPropagation()">
       <button type="button" class="btn-modal-close" onclick="closeQrModal()" aria-label="Close QR Modal">×</button>
       <div class="modal-header">
@@ -222,7 +229,7 @@
   </script>
 
   <!-- Scripts -->
-  <script src="{{ url_for('static', filename='js/main.js') }}" defer></script>
+  <script src="{{ url_for('static', filename='js/main.js') }}?v=1.2" defer></script>
   {% block scripts %}{% endblock %}
 
 </body>

@@ -1,9 +1,9 @@
-// InstaDown Service Worker (PWA Shell Cache)
-const CACHE_NAME = 'instadown-cache-v1.1';
+// InstaDown Service Worker (PWA Shell Cache v1.2)
+const CACHE_NAME = 'instadown-cache-v1.2';
 const ASSETS_TO_CACHE = [
   '/',
-  '/static/css/styles.css',
-  '/static/js/main.js',
+  '/static/css/styles.css?v=1.2',
+  '/static/js/main.js?v=1.2',
   '/static/images/favicon.svg',
   '/static/images/favicon.ico',
   '/static/images/apple-touch-icon.png',
@@ -33,7 +33,6 @@ self.addEventListener('activate', (event) => {
 });
 
 self.addEventListener('fetch', (event) => {
-  // Only cache GET requests for static assets and shell
   if (event.request.method !== 'GET' || event.request.url.includes('/api/')) {
     return;
   }
@@ -60,7 +59,6 @@ self.addEventListener('fetch', (event) => {
 
         return networkResponse;
       }).catch(() => {
-        // Fallback for navigation requests
         if (event.request.mode === 'navigate') {
           return caches.match('/');
         }

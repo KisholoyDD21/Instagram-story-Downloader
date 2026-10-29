@@ -1,5 +1,5 @@
 /**
- * InstaDown Advanced Client Controller v1.1
+ * InstaDown Advanced Client Controller v1.2
  * Features:
  * - Dynamic interactive cursor glow & ambient light
  * - Mode selection tabs (Reels, Photos, Audio MP3, Stories)
@@ -7,8 +7,8 @@
  * - In-browser inline video player preview
  * - Multi-slide carousel album inspector & ZIP download
  * - Background audio extraction (MP3)
- * - Desktop-to-mobile QR code transfer modal
- * - Client-side private Recent Downloads History tray
+ * - Desktop-to-mobile QR code transfer modal (with guaranteed modal isolation)
+ * - Client-side private Recent Downloads History drawer
  * - Native Web Share API & clipboard helpers
  * - Cookie consent management & analytics dispatcher
  */
@@ -495,18 +495,23 @@ function openQrModal() {
   if (!qrModalOverlay || !qrCanvasContainer) return;
   const targetUrl = urlInput ? urlInput.value.trim() : window.location.href;
 
-  // Generate crisp QR code SVG/image
   const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=220x220&data=${encodeURIComponent(targetUrl)}&bgcolor=ffffff&color=08080f&margin=4`;
   qrCanvasContainer.innerHTML = `
     <img src="${qrUrl}" alt="Scan QR Code to save on phone" width="220" height="220" style="border-radius:8px;display:block;" />
   `;
 
+  qrModalOverlay.style.display = 'flex';
+  void qrModalOverlay.offsetWidth;
   qrModalOverlay.classList.add('active');
   trackEvent('qr_modal_opened');
 }
 
 function closeQrModal() {
-  if (qrModalOverlay) qrModalOverlay.classList.remove('active');
+  if (!qrModalOverlay) return;
+  qrModalOverlay.classList.remove('active');
+  setTimeout(() => {
+    qrModalOverlay.style.display = 'none';
+  }, 250);
 }
 
 function copyCurrentMediaUrl() {
@@ -533,7 +538,6 @@ function shareCurrentMedia() {
       url: targetUrl
     }).catch(() => {});
   } else {
-    // Fallback: Copy link
     navigator.clipboard.writeText(targetUrl).then(() => {
       showToast('Post link copied to clipboard!');
     });
@@ -560,7 +564,6 @@ function saveHistoryItem(post, originalUrl) {
   if (!post || !post.shortcode) return;
   const items = getHistoryItems();
 
-  // Deduplicate
   const filtered = items.filter(i => i.shortcode !== post.shortcode);
   filtered.unshift({
     shortcode: post.shortcode,
@@ -572,7 +575,6 @@ function saveHistoryItem(post, originalUrl) {
     timestamp: Date.now()
   });
 
-  // Limit to 15 items
   const trimmed = filtered.slice(0, 15);
   localStorage.setItem(HISTORY_STORAGE_KEY, JSON.stringify(trimmed));
   updateHistoryCounter(trimmed.length);
@@ -592,8 +594,13 @@ function toggleHistoryDrawer() {
   if (isActive) {
     historyDrawer.classList.remove('active');
     drawerOverlay.classList.remove('active');
+    setTimeout(() => {
+      drawerOverlay.style.display = 'none';
+    }, 300);
   } else {
     renderHistory();
+    drawerOverlay.style.display = 'block';
+    void drawerOverlay.offsetWidth;
     historyDrawer.classList.add('active');
     drawerOverlay.classList.add('active');
   }
