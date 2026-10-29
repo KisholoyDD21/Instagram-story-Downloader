@@ -1,9 +1,9 @@
-// InstaDown Service Worker (PWA Shell Cache v1.2)
-const CACHE_NAME = 'instadown-cache-v1.2';
+// InstaDown Service Worker (PWA Shell Cache v1.3)
+const CACHE_NAME = 'instadown-cache-v1.3';
 const ASSETS_TO_CACHE = [
   '/',
-  '/static/css/styles.css?v=1.2',
-  '/static/js/main.js?v=1.2',
+  '/static/css/styles.css?v=1.3',
+  '/static/js/main.js?v=1.3',
   '/static/images/favicon.svg',
   '/static/images/favicon.ico',
   '/static/images/apple-touch-icon.png',
