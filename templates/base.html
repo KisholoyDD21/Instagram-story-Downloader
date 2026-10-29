@@ -7,10 +7,16 @@
   <!-- Primary Meta Tags -->
   <title>{{ title | default('InstaDown — Fast Instagram Reels Downloader & Free HD Video Saver') }}</title>
   <meta name="title" content="{{ title | default('InstaDown — Fast Instagram Reels Downloader & Free HD Video Saver') }}">
-  <meta name="description" content="{{ meta_description | default('Fast Instagram Reels Downloader, Download IG Videos Online & Free HD Reel Saver. Download Instagram videos, posts, photos, and carousels in original high quality without watermarks.') }}">
-  <meta name="keywords" content="Fast Instagram Reels Downloader, Download IG Videos Online, Free HD Reel Saver, Instagram Video Downloader, Save IG Reels, Instagram Post Downloader, Instagram Carousel Downloader, InstaDown, IG Saver">
+  <meta name="description" content="{{ meta_description | default('Fast Instagram Reels Downloader, Download IG Videos Online & Free HD Reel Saver. Download Instagram videos, posts, photos, carousels, and audio in original high quality without watermarks.') }}">
+  <meta name="keywords" content="Fast Instagram Reels Downloader, Download IG Videos Online, Free HD Reel Saver, Instagram Video Downloader, Save IG Reels, Instagram Post Downloader, Instagram Carousel Downloader, Instagram Audio Extractor, InstaDown">
   <meta name="robots" content="index, follow">
   <meta name="theme-color" content="#08080f">
+
+  <!-- PWA Manifest & Mobile Capability -->
+  <link rel="manifest" href="/manifest.json">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="InstaDown">
 
   <!-- Canonical URL -->
   <link rel="canonical" href="{{ canonical_url | default('https://instagram-story-downloader.onrender.com/') }}">
@@ -61,14 +67,9 @@
     window.dataLayer = window.dataLayer || [];
     function gtag(){dataLayer.push(arguments);}
     gtag('js', new Date());
-    // Default consent mode
-    gtag('consent', 'default', {
-      'analytics_storage': 'denied'
-    });
+    gtag('consent', 'default', { 'analytics_storage': 'denied' });
     if (localStorage.getItem('instadown_cookie_consent') === 'accepted') {
-      gtag('consent', 'update', {
-        'analytics_storage': 'granted'
-      });
+      gtag('consent', 'update', { 'analytics_storage': 'granted' });
       gtag('config', '{{ ga_id }}');
     }
   </script>
@@ -78,7 +79,8 @@
 </head>
 <body>
 
-  <!-- Ambient glowing gradient blobs -->
+  <!-- Dynamic ambient interactive background -->
+  <div class="interactive-glow" id="cursor-glow"></div>
   <div class="blob blob-1"></div>
   <div class="blob blob-2"></div>
   <div class="blob blob-3"></div>
@@ -99,10 +101,22 @@
         <a href="/terms" class="nav-link {% if active_page == 'terms' %}active{% endif %}">Terms</a>
       </nav>
 
-      <a href="https://github.com/KisholoyDD21/Instagram-story-Downloader" target="_blank" rel="noopener noreferrer" class="badge-header" title="GitHub Repository">
-        <span class="badge-dot"></span>
-        <span>v1.0 · GitHub</span>
-      </a>
+      <div class="header-actions">
+        <!-- History Drawer Button -->
+        <button type="button" class="btn-history-toggle" id="history-toggle-btn" onclick="toggleHistoryDrawer()" title="View Recent Downloads">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="10"></circle>
+            <polyline points="12 6 12 12 16 14"></polyline>
+          </svg>
+          <span>History</span>
+          <span class="history-badge" id="history-counter">0</span>
+        </button>
+
+        <a href="https://github.com/KisholoyDD21/Instagram-story-Downloader" target="_blank" rel="noopener noreferrer" class="badge-header" title="GitHub Repository">
+          <span class="badge-dot"></span>
+          <span>v1.1 · GitHub</span>
+        </a>
+      </div>
     </header>
 
     <!-- Main Content Block -->
@@ -115,7 +129,9 @@
   <footer>
     <div class="container">
       <div class="footer-inner">
-        <span class="footer-txt">Built with Python, Flask & Instaloader · Open Source</span>
+        <div class="footer-brand">
+          <span class="footer-txt">Built with Python, Flask & Instaloader · High Performance Engine</span>
+        </div>
         <div class="footer-links">
           <a href="https://github.com/KisholoyDD21/Instagram-story-Downloader" target="_blank" rel="noopener noreferrer" title="View Source on GitHub">GitHub</a>
           <a href="/privacy" title="Privacy Policy">Privacy Policy</a>
@@ -123,7 +139,7 @@
           <a href="/sitemap.xml" title="XML Sitemap">Sitemap</a>
         </div>
       </div>
-      <div style="text-align: center; margin-top: 14px; font-size: 0.75rem; color: var(--txt-muted);">
+      <div style="text-align: center; margin-top: 16px; font-size: 0.78rem; color: var(--txt-muted);">
         © {{ current_year | default(2026) }} InstaDown. Not affiliated with Instagram, Meta Inc. All content rights belong to their respective creators.
       </div>
     </div>
@@ -132,13 +148,78 @@
   <!-- Cookie Consent Banner -->
   <aside id="cookie-banner" class="cookie-banner" role="dialog" aria-label="Cookie and Privacy Consent" style="display: none;">
     <div class="cookie-text">
-      🍪 <strong>We value your privacy.</strong> We use cookies and local storage for essential session handling and to understand how you interact with our service. Read our <a href="/privacy">Privacy Policy</a> to learn more.
+      🍪 <strong>We value your privacy.</strong> We use cookies and local storage for essential session handling and to remember your download preferences. Read our <a href="/privacy">Privacy Policy</a> to learn more.
     </div>
     <div class="cookie-actions">
       <button type="button" class="btn-cookie-accept" onclick="acceptAllCookies()">Accept All</button>
       <button type="button" class="btn-cookie-decline" onclick="declineNonEssentialCookies()">Essential Only</button>
     </div>
   </aside>
+
+  <!-- Recent Downloads Drawer (100% Client-Side / Private) -->
+  <div class="drawer-overlay" id="drawer-overlay" onclick="toggleHistoryDrawer()"></div>
+  <aside class="history-drawer" id="history-drawer" role="complementary" aria-label="Recent Downloads History">
+    <div class="drawer-header">
+      <div class="drawer-title">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="12" cy="12" r="10"></circle>
+          <polyline points="12 6 12 12 16 14"></polyline>
+        </svg>
+        <h3>Recent Downloads</h3>
+      </div>
+      <button type="button" class="btn-drawer-close" onclick="toggleHistoryDrawer()" aria-label="Close History">×</button>
+    </div>
+
+    <div class="drawer-content" id="history-list">
+      <!-- Injected dynamically via JS -->
+    </div>
+
+    <div class="drawer-footer">
+      <button type="button" class="btn-clear-history" onclick="clearAllHistory()">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <polyline points="3 6 5 6 21 6"></polyline>
+          <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+        </svg>
+        <span>Clear History</span>
+      </button>
+    </div>
+  </aside>
+
+  <!-- Send to Mobile QR Code Modal -->
+  <div class="modal-overlay" id="qr-modal-overlay" onclick="closeQrModal()">
+    <div class="modal-card" onclick="event.stopPropagation()">
+      <button type="button" class="btn-modal-close" onclick="closeQrModal()" aria-label="Close QR Modal">×</button>
+      <div class="modal-header">
+        <div class="qr-icon-wrap">📲</div>
+        <h3>Send to Mobile Phone</h3>
+        <p>Scan this QR code with your iPhone or Android camera to download directly to your mobile photo library.</p>
+      </div>
+
+      <div class="qr-canvas-wrap" id="qr-canvas-container">
+        <!-- Dynamic QR SVG / Canvas generated here -->
+      </div>
+
+      <div class="qr-footer-actions">
+        <button type="button" class="btn-copy-url" onclick="copyCurrentMediaUrl()">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+            <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+          </svg>
+          <span id="copy-url-btn-text">Copy Link</span>
+        </button>
+        <button type="button" class="btn-cta-modal" onclick="closeQrModal()">Done</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Service Worker Registration -->
+  <script>
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('/sw.js').catch(() => {});
+      });
+    }
+  </script>
 
   <!-- Scripts -->
   <script src="{{ url_for('static', filename='js/main.js') }}" defer></script>

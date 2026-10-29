@@ -3,8 +3,10 @@ import re
 import gzip
 import glob
 import shutil
+import zipfile
 import tempfile
 import datetime
+import subprocess
 from flask import (
     Flask,
     request,
@@ -30,7 +32,7 @@ app = Flask(
     template_folder="templates"
 )
 
-# App Configuration from Environment (Secrets & Settings off the front end)
+# App Configuration from Environment
 app.secret_key = os.getenv("FLASK_SECRET_KEY", os.urandom(32).hex())
 BASE_URL = os.getenv("BASE_URL", "https://instagram-story-downloader.onrender.com").rstrip("/")
 GA_MEASUREMENT_ID = os.getenv("GA_MEASUREMENT_ID", "")
@@ -74,7 +76,7 @@ def enforce_canonical_and_https():
             new_path += f"?{request.query_string.decode('utf-8')}"
         return redirect(new_path, code=301)
 
-    # 3. Force HTTPS in production (reverse proxy header check)
+    # 3. Force HTTPS in production
     proto = request.headers.get("X-Forwarded-Proto", "").lower()
     if not app.debug and proto == "http":
         https_url = request.url.replace("http://", "https://", 1)
@@ -93,10 +95,10 @@ def apply_headers_and_compression(response):
     # Browser Caching Policy
     if request.path.startswith("/static/"):
         response.headers["Cache-Control"] = "public, max-age=31536000, immutable"
-    elif request.path in ["/robots.txt", "/sitemap.xml", "/favicon.ico"]:
+    elif request.path in ["/robots.txt", "/sitemap.xml", "/favicon.ico", "/manifest.json"]:
         response.headers["Cache-Control"] = "public, max-age=86400"
 
-    # Lightweight Gzip Compression for text-based payloads > 500 bytes
+    # Gzip Compression for eligible text payloads
     accept_encoding = request.headers.get("Accept-Encoding", "").lower()
     if (
         "gzip" in accept_encoding
@@ -121,7 +123,7 @@ def apply_headers_and_compression(response):
     return response
 
 
-# ─── SEO & STATIC ROUTES ───────────────────────────────────────────
+# ─── SEO, PWA & STATIC ROUTES ──────────────────────────────────────
 @app.route("/robots.txt")
 def robots():
     content = f"""User-agent: *
@@ -169,6 +171,24 @@ def favicon():
     )
 
 
+@app.route("/manifest.json")
+def pwa_manifest():
+    return send_from_directory(
+        app.static_folder,
+        "manifest.json",
+        mimetype="application/manifest+json",
+    )
+
+
+@app.route("/sw.js")
+def service_worker():
+    return send_from_directory(
+        app.static_folder,
+        "sw.js",
+        mimetype="application/javascript",
+    )
+
+
 @app.route("/googled6b96ac3b100fcd2.html")
 def google_verify():
     return f"google-site-verification: {GOOGLE_VERIFICATION}.html", 200, {"Content-Type": "text/html"}
@@ -180,7 +200,7 @@ def index():
     return render_template(
         "index.html",
         title="InstaDown — Fast Instagram Reels Downloader & Free HD Video Saver",
-        meta_description="Fast Instagram Reels Downloader, Download IG Videos Online & Free HD Reel Saver. Download Instagram videos, posts, photos, and carousels in original high quality without watermarks.",
+        meta_description="Fast Instagram Reels Downloader, Download IG Videos Online & Free HD Reel Saver. Download Instagram videos, posts, photos, carousels, and audio tracks in original high quality without watermarks.",
         canonical_url=f"{BASE_URL}/",
         social_preview_url=url_for("static", filename="images/social-preview.png", _external=True),
         current_year=datetime.date.today().year,
@@ -221,9 +241,26 @@ def terms():
 
 
 # ─── API ENDPOINTS ─────────────────────────────────────────────────
+@app.route("/api/health", methods=["GET"])
+def health():
+    """Uptime and health check endpoint for monitoring."""
+    return jsonify({
+        "status": "healthy",
+        "service": "InstaDown",
+        "version": "1.1.0",
+        "timestamp": datetime.datetime.now(datetime.timezone.utc).isoformat(),
+        "features": {
+            "reels_download": True,
+            "carousel_inspection": True,
+            "audio_extraction": True,
+            "pwa": True
+        }
+    }), 200
+
+
 @app.route("/api/info", methods=["POST"])
 def get_info():
-    """Return metadata (thumbnail, caption, type, likes) without downloading."""
+    """Return enriched metadata (thumbnail, video_url, caption, type, carousel items) without downloading."""
     data = request.get_json(force=True, silent=True) or {}
     url = (data.get("url") or "").strip()
     if not url:
@@ -240,16 +277,33 @@ def get_info():
         if typename == "GraphSidecar":
             media_type = "carousel"
 
+        # Extract carousel items if post is an album/sidecar
+        carousel_items = []
+        if typename == "GraphSidecar":
+            try:
+                for idx, node in enumerate(post.get_sidecar_nodes()):
+                    carousel_items.append({
+                        "index": idx + 1,
+                        "is_video": node.is_video,
+                        "display_url": node.display_url,
+                        "video_url": node.video_url if node.is_video else None,
+                        "thumbnail": node.display_url,
+                    })
+            except Exception:
+                carousel_items = []
+
         return jsonify({
             "shortcode": shortcode,
             "owner": post.owner_username,
-            "caption": (post.caption or "")[:240],
+            "caption": (post.caption or "")[:280],
             "likes": post.likes,
             "media_type": media_type,
             "typename": typename,
             "thumbnail": post.url,
             "video_url": post.video_url if post.is_video else None,
             "is_video": post.is_video,
+            "carousel_items": carousel_items,
+            "slide_count": len(carousel_items) if carousel_items else 1,
         })
     except instaloader.exceptions.InstaloaderException as e:
         return jsonify({"error": f"Instagram error: {str(e)}"}), 400
@@ -259,9 +313,19 @@ def get_info():
 
 @app.route("/api/download", methods=["POST"])
 def download():
-    """Download the media and stream it back to the browser with guaranteed temp cleanup."""
+    """
+    Download and stream back media files.
+    Supports:
+    - Default video/image download
+    - Audio extraction ('type': 'audio')
+    - Carousel slide zip bundling ('type': 'zip')
+    - Single carousel slide selection ('slide': index)
+    """
     data = request.get_json(force=True, silent=True) or {}
     url = (data.get("url") or "").strip()
+    req_type = data.get("type", "default")  # 'default', 'audio', 'zip'
+    slide_index = data.get("slide")         # optional 1-based slide index
+
     if not url:
         return jsonify({"error": "No URL provided"}), 400
 
@@ -278,33 +342,108 @@ def download():
         L.download_post(post, target=tmp)
         L.dirname_pattern = orig_dirname
 
-        # Discover media file
-        videos = glob.glob(os.path.join(tmp, "**", "*.mp4"), recursive=True)
-        images = glob.glob(os.path.join(tmp, "**", "*.jpg"), recursive=True) + \
-                 glob.glob(os.path.join(tmp, "**", "*.png"), recursive=True)
+        # Discover all downloaded media files in tmp
+        all_videos = sorted(glob.glob(os.path.join(tmp, "**", "*.mp4"), recursive=True))
+        all_images = sorted(glob.glob(os.path.join(tmp, "**", "*.jpg"), recursive=True) +
+                            glob.glob(os.path.join(tmp, "**", "*.png"), recursive=True))
 
-        if videos:
-            filepath = videos[0]
-            mime = "video/mp4"
-            ext = "mp4"
-        elif images:
-            filepath = images[0]
-            mime = "image/jpeg"
-            ext = "jpg"
-        else:
+        all_media = all_videos + all_images
+        if not all_media:
             shutil.rmtree(tmp, ignore_errors=True)
             return jsonify({"error": "No media file found after download"}), 500
 
-        fname = f"instadown_{shortcode}.{ext}"
+        # Case 1: Audio extraction requested
+        if req_type == "audio":
+            if not all_videos:
+                shutil.rmtree(tmp, ignore_errors=True)
+                return jsonify({"error": "This post does not contain a video or audio stream."}), 400
 
+            video_file = all_videos[0]
+            mp3_out = os.path.join(tmp, f"instadown_{shortcode}_audio.mp3")
+
+            # Try ffmpeg conversion if available
+            has_ffmpeg = shutil.which("ffmpeg") is not None
+            if has_ffmpeg:
+                try:
+                    subprocess.run(
+                        ["ffmpeg", "-i", video_file, "-vn", "-c:a", "libmp3lame", "-q:a", "2", mp3_out, "-y"],
+                        check=True,
+                        stdout=subprocess.DEVNULL,
+                        stderr=subprocess.DEVNULL,
+                    )
+                    response = send_file(
+                        mp3_out,
+                        mimetype="audio/mpeg",
+                        as_attachment=True,
+                        download_name=f"instadown_{shortcode}_audio.mp3",
+                    )
+                    response.call_on_close(lambda: shutil.rmtree(tmp, ignore_errors=True))
+                    return response
+                except Exception:
+                    pass
+
+            # Fallback: stream original container audio
+            response = send_file(
+                video_file,
+                mimetype="audio/mp4",
+                as_attachment=True,
+                download_name=f"instadown_{shortcode}_audio.m4a",
+            )
+            response.call_on_close(lambda: shutil.rmtree(tmp, ignore_errors=True))
+            return response
+
+        # Case 2: Zip bundle requested for carousels
+        if req_type == "zip" and len(all_media) > 1:
+            zip_filename = f"instadown_{shortcode}_album.zip"
+            zip_path = os.path.join(tmp, zip_filename)
+            with zipfile.ZipFile(zip_path, "w", zipfile.ZIP_DEFLATED) as zipf:
+                for idx, media_path in enumerate(all_media, 1):
+                    ext = os.path.splitext(media_path)[1]
+                    arcname = f"slide_{idx}{ext}"
+                    zipf.write(media_path, arcname=arcname)
+
+            response = send_file(
+                zip_path,
+                mimetype="application/zip",
+                as_attachment=True,
+                download_name=zip_filename,
+            )
+            response.call_on_close(lambda: shutil.rmtree(tmp, ignore_errors=True))
+            return response
+
+        # Case 3: Specific slide index requested
+        if slide_index and isinstance(slide_index, int) and 1 <= slide_index <= len(all_media):
+            target_file = all_media[slide_index - 1]
+            ext = "mp4" if target_file.endswith(".mp4") else "jpg"
+            mime = "video/mp4" if ext == "mp4" else "image/jpeg"
+            fname = f"instadown_{shortcode}_slide{slide_index}.{ext}"
+
+            response = send_file(
+                target_file,
+                mimetype=mime,
+                as_attachment=True,
+                download_name=fname,
+            )
+            response.call_on_close(lambda: shutil.rmtree(tmp, ignore_errors=True))
+            return response
+
+        # Case 4: Default single media item (prioritizing video then image)
+        if all_videos:
+            filepath = all_videos[0]
+            mime = "video/mp4"
+            ext = "mp4"
+        else:
+            filepath = all_images[0]
+            mime = "image/jpeg"
+            ext = "jpg"
+
+        fname = f"instadown_{shortcode}.{ext}"
         response = send_file(
             filepath,
             mimetype=mime,
             as_attachment=True,
             download_name=fname,
         )
-
-        # Ensure temp directory is purged immediately after stream closes
         response.call_on_close(lambda: shutil.rmtree(tmp, ignore_errors=True))
         return response
 

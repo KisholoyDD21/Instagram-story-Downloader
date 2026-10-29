@@ -1,16 +1,16 @@
 {% extends "base.html" %}
 
 {% block head_extra %}
-<!-- JSON-LD Structured Data Schemas for Enhanced Search Visibility -->
+<!-- JSON-LD Structured Data Schemas -->
 <script type="application/ld+json">
 [
   {
     "@context": "https://schema.org",
     "@type": "WebApplication",
     "name": "InstaDown",
-    "alternateName": ["Fast Instagram Reels Downloader", "Download IG Videos Online", "Free HD Reel Saver"],
+    "alternateName": ["Fast Instagram Reels Downloader", "Download IG Videos Online", "Free HD Reel Saver", "Instagram MP3 Audio Extractor"],
     "url": "{{ canonical_url | default('https://instagram-story-downloader.onrender.com/') }}",
-    "description": "Fast Instagram Reels Downloader & Download IG Videos Online for free without watermarks.",
+    "description": "Fast Instagram Reels Downloader & Download IG Videos Online for free without watermarks. Extract audio MP3 and download full carousels.",
     "applicationCategory": "MultimediaApplication",
     "operatingSystem": "All",
     "offers": {
@@ -22,23 +22,23 @@
   {
     "@context": "https://schema.org",
     "@type": "HowTo",
-    "name": "How to Download Instagram Reels Online for Free",
-    "description": "Step-by-step guide to download Instagram Reels, videos, and posts in HD using InstaDown.",
+    "name": "How to Download Instagram Reels and Audio Online for Free",
+    "description": "Step-by-step guide to download Instagram Reels, videos, carousel photos, and audio MP3 in HD using InstaDown.",
     "step": [
       {
         "@type": "HowToStep",
         "name": "Copy the Instagram Link",
-        "text": "Open Instagram, find the Reel or post you want to save, tap the share icon and click Copy Link."
+        "text": "Open Instagram, tap Share on any Reel, post, or carousel, and click Copy Link."
       },
       {
         "@type": "HowToStep",
         "name": "Paste URL into InstaDown",
-        "text": "Go to InstaDown, paste the URL into the input field or click Paste from Clipboard."
+        "text": "Paste the link into InstaDown using our 1-click Paste button and click Fetch Media."
       },
       {
         "@type": "HowToStep",
-        "name": "Download Media File",
-        "text": "Preview the thumbnail and creator info, then click Download High Quality Media to save the HD MP4 video or photo."
+        "name": "Preview and Download",
+        "text": "Play the inline video preview, choose to download the HD video, extract MP3 audio, or download carousel slides as a ZIP archive."
       }
     ]
   },
@@ -48,34 +48,34 @@
     "mainEntity": [
       {
         "@type": "Question",
-        "name": "Is InstaDown a free Instagram Reel Downloader?",
+        "name": "Can I extract audio (MP3) from Instagram Reels?",
         "acceptedAnswer": {
           "@type": "Answer",
-          "text": "Yes, InstaDown is 100% free to use with no software installation, registration, or subscription required."
+          "text": "Yes! InstaDown allows you to extract and download the background music and audio track from any public Instagram Reel or video with a single click."
         }
       },
       {
         "@type": "Question",
-        "name": "Can I download Instagram videos without a watermark?",
+        "name": "How do I download multi-image Instagram carousels?",
         "acceptedAnswer": {
           "@type": "Answer",
-          "text": "Yes, InstaDown fetches original high-definition media directly from Instagram without adding any watermarks or logo overlays."
+          "text": "When you paste a carousel link, InstaDown displays all slides in an interactive gallery, allowing you to download individual slides or download all items bundled as a ZIP archive."
         }
       },
       {
         "@type": "Question",
-        "name": "Does InstaDown support Carousel photos and IGTV videos?",
+        "name": "Can I send downloaded videos directly to my mobile phone?",
         "acceptedAnswer": {
           "@type": "Answer",
-          "text": "Yes, you can paste links for public Instagram Reels, single photo posts, multi-photo carousels, and IGTV videos."
+          "text": "Yes. When using a desktop computer, simply click 'Send to Phone' to generate an instant QR code you can scan with your iPhone or Android camera."
         }
       },
       {
         "@type": "Question",
-        "name": "Is it safe to download Instagram videos on InstaDown?",
+        "name": "Is InstaDown 100% free with no watermarks?",
         "acceptedAnswer": {
           "@type": "Answer",
-          "text": "InstaDown does not store your personal details or downloaded media files on server storage, ensuring full user privacy and safety."
+          "text": "Yes, InstaDown is completely free with zero watermarks, zero logins, and unlimited downloads."
         }
       }
     ]
@@ -91,18 +91,43 @@
     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
       <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon>
     </svg>
-    Fast Instagram Reels Downloader · Free HD Reel Saver
+    Ultra-Fast Instagram Media Downloader · 1080p HD & MP3
   </div>
 
-  <h1>Fast Instagram <span class="grad">Reels Downloader</span></h1>
-  <p>Download IG Videos Online & Free HD Reel Saver. Paste any public Instagram Reel or Post link below to fetch and save original quality media — zero compression, zero watermarks.</p>
+  <h1>Download Instagram <span class="grad">Reels, Video & Audio</span></h1>
+  <p>Paste any public Instagram link to preview videos in-browser, download original 1080p MP4 media, extract background audio (MP3), or save full photo albums without watermarks.</p>
 
-  <div class="tags">
-    <div class="tag"><div class="tag-dot"></div>Fast Reels Downloader</div>
-    <div class="tag"><div class="tag-dot"></div>Download IG Videos</div>
-    <div class="tag"><div class="tag-dot"></div>Free HD Reel Saver</div>
-    <div class="tag"><div class="tag-dot"></div>No Watermark</div>
-    <div class="tag"><div class="tag-dot"></div>High Speed 1080p</div>
+  <!-- Interactive Downloader Feature Tabs -->
+  <div class="media-tabs" role="tablist" aria-label="Media Downloader Categories">
+    <button type="button" class="tab-btn active" data-tab="reels" onclick="switchMediaTab('reels', this)">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <polygon points="5 3 19 12 5 21 5 3"></polygon>
+      </svg>
+      <span>Reels & Video</span>
+    </button>
+    <button type="button" class="tab-btn" data-tab="photos" onclick="switchMediaTab('photos', this)">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+        <circle cx="8.5" cy="8.5" r="1.5"></circle>
+        <polyline points="21 15 16 10 5 21"></polyline>
+      </svg>
+      <span>Photos & Carousels</span>
+    </button>
+    <button type="button" class="tab-btn" data-tab="audio" onclick="switchMediaTab('audio', this)">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M9 18V5l12-2v13"></path>
+        <circle cx="6" cy="18" r="3"></circle>
+        <circle cx="18" cy="16" r="3"></circle>
+      </svg>
+      <span>Extract Audio (MP3)</span>
+    </button>
+    <button type="button" class="tab-btn" data-tab="stories" onclick="switchMediaTab('stories', this)">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <circle cx="12" cy="12" r="10"></circle>
+        <polygon points="10 8 16 12 10 16 10 8"></polygon>
+      </svg>
+      <span>Stories Guide</span>
+    </button>
   </div>
 </section>
 
@@ -114,7 +139,7 @@
         <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path>
         <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path>
       </svg>
-      <span>Paste Instagram Post / Reel URL</span>
+      <span id="input-label-text">Paste Instagram Reel, Video or Carousel Link</span>
     </div>
 
     <!-- 1-Click Clipboard CTA -->
@@ -135,6 +160,7 @@
         <line x1="17.5" y1="6.5" x2="17.51" y2="6.5"></line>
       </svg>
     </span>
+
     <input
       type="text"
       id="url-input"
@@ -144,6 +170,10 @@
       spellcheck="false"
       required
     />
+
+    <!-- Quick clear button (X) -->
+    <button type="button" class="btn-input-clear" id="btn-input-clear" onclick="clearInput()" aria-label="Clear input">×</button>
+
     <!-- Primary Clear CTA Button -->
     <button class="btn-cta" id="fetch-btn" onclick="fetchInfo()" aria-label="Fetch Media">
       <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
@@ -155,40 +185,79 @@
   </div>
 
   <div class="hint-bar">
-    <span>Supported formats: <strong>/reel/</strong> · <strong>/p/</strong> · <strong>/tv/</strong> (Public posts only)</span>
-    <span>Zero login required</span>
+    <span id="hint-text">Supports: <strong>/reel/</strong> · <strong>/p/</strong> · <strong>/tv/</strong> (Public posts only)</span>
+    <span class="keyboard-cue">Press <kbd>↵ Enter</kbd> to search</span>
   </div>
 
   <!-- Dynamic Error Area -->
   <div id="error-area" style="display: none;"></div>
 
+  <!-- Skeleton Shimmer Loader (Shown during fetch) -->
+  <div id="skeleton-loader" class="skeleton-card" style="display: none;">
+    <div class="skeleton-grid">
+      <div class="skeleton-box skeleton-thumb"></div>
+      <div class="skeleton-meta">
+        <div class="skeleton-box skeleton-line-title"></div>
+        <div class="skeleton-box skeleton-line"></div>
+        <div class="skeleton-box skeleton-line" style="width: 70%;"></div>
+        <div class="skeleton-box skeleton-btn"></div>
+      </div>
+    </div>
+  </div>
+
   <!-- Result Panel (Revealed on fetch success) -->
   <div id="result-panel">
     <div class="result-grid">
-      <div class="thumb-wrap">
-        <!-- Lazy loaded image with descriptive alt text -->
-        <img
-          id="thumb"
-          src=""
-          alt="Instagram Post Preview Thumbnail"
-          loading="lazy"
-          decoding="async"
-        />
-        <div class="media-badge" id="media-badge">
-          <svg width="11" height="11" viewBox="0 0 24 24" fill="currentColor">
-            <polygon points="5 3 19 12 5 21 5 3"></polygon>
-          </svg>
-          <span id="media-type-label">Video</span>
+      
+      <!-- Media Player & Thumbnail Container -->
+      <div class="media-preview-container">
+        <!-- Video Player Element (Conditional preview) -->
+        <div class="video-player-wrap" id="video-player-wrap" style="display: none;">
+          <video id="inline-video-player" playsinline controls preload="metadata"></video>
+        </div>
+
+        <!-- Static Thumbnail Preview with Play Overlay Button -->
+        <div class="thumb-wrap" id="thumb-preview-wrap">
+          <img
+            id="thumb"
+            src=""
+            alt="Instagram Post Preview Thumbnail"
+            loading="lazy"
+            decoding="async"
+          />
+          <button type="button" class="play-preview-overlay" id="play-preview-btn" onclick="startInlinePreview()" title="Preview Video">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="#fff">
+              <polygon points="5 3 19 12 5 21 5 3"></polygon>
+            </svg>
+          </button>
+          <div class="media-badge" id="media-badge">
+            <span id="media-type-label">Video</span>
+          </div>
         </div>
       </div>
 
+      <!-- Result Metadata & Action Hub -->
       <div class="result-meta">
-        <div class="result-owner">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align: middle;">
-            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
-            <circle cx="12" cy="7" r="4"></circle>
-          </svg>
-          <span id="owner-name">@username</span>
+        <div class="result-header-row">
+          <div class="result-owner">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align: middle;">
+              <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+              <circle cx="12" cy="7" r="4"></circle>
+            </svg>
+            <span id="owner-name">@username</span>
+          </div>
+
+          <!-- Direct Share / Copy Button -->
+          <button type="button" class="btn-share-icon" onclick="shareCurrentMedia()" title="Share Post">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="18" cy="5" r="3"></circle>
+              <circle cx="6" cy="12" r="3"></circle>
+              <circle cx="18" cy="19" r="3"></circle>
+              <line x1="8.59" y1="13.51" x2="15.42" y2="17.49"></line>
+              <line x1="15.41" y1="6.51" x2="8.59" y2="10.49"></line>
+            </svg>
+            <span>Share</span>
+          </button>
         </div>
 
         <div class="result-caption" id="caption-text">—</div>
@@ -204,25 +273,88 @@
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#10b981" stroke-width="2">
               <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline>
             </svg>
-            <span id="quality-label">Original quality</span>
+            <span id="quality-label">1080p HD</span>
           </div>
         </div>
 
-        <!-- Download Action Button -->
-        <button class="btn-download-action" id="download-btn" onclick="startDownload()">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
-            <polyline points="7 10 12 15 17 10"></polyline>
-            <line x1="12" y1="15" x2="12" y2="3"></line>
-          </svg>
-          <span>Download High Quality Media</span>
-        </button>
+        <!-- Primary Action Cluster -->
+        <div class="action-buttons-stack">
+          <!-- Main Download Button -->
+          <button class="btn-download-action" id="download-btn" onclick="startDownload('default')">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+              <polyline points="7 10 12 15 17 10"></polyline>
+              <line x1="12" y1="15" x2="12" y2="3"></line>
+            </svg>
+            <span id="download-btn-text">Download High Quality Media</span>
+          </button>
 
+          <!-- Secondary Actions Grid (Audio Extraction & Send to Phone) -->
+          <div class="secondary-actions-grid">
+            <button type="button" class="btn-action-secondary" id="btn-audio-extract" onclick="startDownload('audio')">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M9 18V5l12-2v13"></path>
+                <circle cx="6" cy="18" r="3"></circle>
+                <circle cx="18" cy="16" r="3"></circle>
+              </svg>
+              <span>Extract Audio (MP3)</span>
+            </button>
+
+            <button type="button" class="btn-action-secondary" onclick="openQrModal()">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <rect x="3" y="3" width="7" height="7"></rect>
+                <rect x="14" y="3" width="7" height="7"></rect>
+                <rect x="14" y="14" width="7" height="7"></rect>
+                <rect x="3" y="14" width="7" height="7"></rect>
+              </svg>
+              <span>Send to Phone (QR)</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Download Progress Bar -->
         <div class="progress-wrap" id="progress-wrap">
           <div class="progress-bar" id="progress-bar"></div>
         </div>
       </div>
     </div>
+
+    <!-- Carousel Album Inspector (Dynamic) -->
+    <div class="carousel-inspector" id="carousel-inspector" style="display: none;">
+      <div class="carousel-inspector-header">
+        <div class="carousel-title-row">
+          <h4>Album Slides (<span id="slide-count-badge">0</span> items)</h4>
+          <span class="carousel-badge">Swipe or scroll</span>
+        </div>
+        <button type="button" class="btn-download-all-zip" onclick="startDownload('zip')">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+            <polyline points="7 10 12 15 17 10"></polyline>
+            <line x1="12" y1="15" x2="12" y2="3"></line>
+          </svg>
+          <span>Download All (.ZIP)</span>
+        </button>
+      </div>
+
+      <!-- Slide Items Grid -->
+      <div class="carousel-slides-strip" id="carousel-slides-strip">
+        <!-- Injected via JS -->
+      </div>
+    </div>
+  </div>
+
+  <!-- Stories Guide Box (Shown when Stories tab is active) -->
+  <div class="stories-guide-card" id="stories-guide-card" style="display: none;">
+    <div class="guide-header">
+      <span class="guide-icon">💡</span>
+      <h4>How to Download Instagram Stories & Highlights</h4>
+    </div>
+    <p>By default, Instagram Stories and Highlights are protected by Instagram's user session and private API restrictions. To save a story:</p>
+    <ol>
+      <li>Ensure the creator's account is completely <strong>Public</strong>.</li>
+      <li>Tap the three dots on the story or highlight and select <strong>Copy Link</strong>.</li>
+      <li>Paste the link into the box above and click <strong>Fetch Media</strong>.</li>
+    </ol>
   </div>
 
   <!-- Privacy & Public notice -->
@@ -233,7 +365,7 @@
       <line x1="12" y1="16" x2="12.01" y2="16"></line>
     </svg>
     <div>
-      Works exclusively for <strong>public Instagram accounts</strong>. Stories and private posts require user authentication and cannot be accessed. Please respect intellectual property rights and creators' ownership.
+      Works exclusively for <strong>public Instagram accounts</strong>. Private accounts require account login and are not supported to protect user privacy. All rights belong to respective content owners.
     </div>
   </div>
 </section>
@@ -245,7 +377,7 @@
     <div class="step-card">
       <div class="step-num">01</div>
       <h3>Copy Instagram Link</h3>
-      <p>Open Instagram on your smartphone or browser, navigate to the Reel or post you wish to download, tap the Share icon, and select <strong>Copy Link</strong>.</p>
+      <p>Open Instagram on your smartphone or browser, navigate to the Reel, video, or carousel post, tap the Share icon, and select <strong>Copy Link</strong>.</p>
     </div>
 
     <div class="step-card">
@@ -256,34 +388,34 @@
 
     <div class="step-card">
       <div class="step-num">03</div>
-      <h3>Download HD Media</h3>
-      <p>Review the preview card and click <strong>Download High Quality Media</strong>. The video or photo is streamed directly without added watermarks.</p>
+      <h3>Download or Send to Phone</h3>
+      <p>Preview the video in-browser, download original 1080p MP4 or MP3 audio, or scan the QR code to save straight to your mobile camera roll.</p>
     </div>
   </div>
 </section>
 
-<!-- FAQ Section for Search Engine Optimization -->
+<!-- FAQ Section -->
 <section class="faq-section" id="faq">
   <h2 class="section-title">Frequently Asked <span>Questions</span></h2>
   <div class="faq-grid">
     <div class="faq-card">
-      <h3>Is InstaDown free to use?</h3>
-      <p>Yes, InstaDown is completely free. There are no subscription tiers, hidden fees, software downloads, or sign-up walls required.</p>
+      <h3>Can I extract background audio from Reels?</h3>
+      <p>Yes. InstaDown includes a built-in audio extraction engine. Simply click "Extract Audio (MP3)" on any Reel to download the audio track directly.</p>
     </div>
 
     <div class="faq-card">
-      <h3>Can I download Instagram videos without a watermark?</h3>
-      <p>Yes. InstaDown delivers raw, original MP4 video streams extracted directly from Instagram CDN servers without watermarks or compressed overlays.</p>
+      <h3>Can I download multi-slide carousel albums?</h3>
+      <p>Yes! InstaDown parses every slide in a carousel. You can preview individual slides, download them one by one, or download the entire album as a ZIP file.</p>
     </div>
 
     <div class="faq-card">
-      <h3>Does InstaDown support Carousel albums and Photos?</h3>
-      <p>Yes, InstaDown supports public single photos, carousel photo packages, video posts, and IGTV videos across modern browsers.</p>
+      <h3>How does 'Send to Phone' work?</h3>
+      <p>Clicking "Send to Phone (QR)" displays an instant QR code. Scan it with your phone's camera app to open and save the media directly onto your mobile device without retyping URLs.</p>
     </div>
 
     <div class="faq-card">
-      <h3>Do you store my downloaded videos or credentials?</h3>
-      <p>No. InstaDown operates with an ephemeral memory model. We never store files on permanent hard drives, and no Instagram account login is needed.</p>
+      <h3>Are downloaded files watermarked?</h3>
+      <p>No. InstaDown delivers raw, high-definition media files directly from Instagram's content delivery network with zero added watermarks or logos.</p>
     </div>
   </div>
 </section>

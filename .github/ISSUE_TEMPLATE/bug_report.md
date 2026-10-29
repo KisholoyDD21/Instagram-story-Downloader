@@ -30,3 +30,4 @@ If applicable, add screenshots or console output to help explain your problem.
  - OS: [e.g. Windows 11, macOS, Ubuntu]
  - Browser: [e.g. Chrome, Safari, Firefox]
  - Python version (if self-hosting): [e.g. 3.11]
+

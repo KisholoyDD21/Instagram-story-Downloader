@@ -1,0 +1,26 @@
+{
+  "name": "InstaDown — Instagram Media Downloader",
+  "short_name": "InstaDown",
+  "description": "Fast Instagram Reels Downloader & Free HD Video Saver without watermarks.",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#08080f",
+  "theme_color": "#08080f",
+  "orientation": "portrait-primary",
+  "categories": ["utilities", "multimedia"],
+  "icons": [
+    {
+      "src": "/static/images/favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/static/images/apple-touch-icon.png",
+      "sizes": "180x180",
+      "type": "image/png",
+      "purpose": "any"
+    }
+  ]
+}

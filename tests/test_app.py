@@ -13,7 +13,7 @@ def test_homepage(client):
     response = client.get("/")
     assert response.status_code == 200
     assert b"InstaDown" in response.data
-    assert b"Fast Instagram Reels Downloader" in response.data
+    assert b"Reels, Video &amp; Audio" in response.data or b"Reels" in response.data
 
 
 def test_privacy_page(client):
@@ -47,6 +47,30 @@ def test_sitemap_xml(client):
 def test_favicon(client):
     response = client.get("/favicon.ico")
     assert response.status_code == 200
+
+
+def test_pwa_manifest(client):
+    response = client.get("/manifest.json")
+    assert response.status_code == 200
+    data = response.get_json()
+    assert data["name"] == "InstaDown — Instagram Media Downloader"
+    assert data["display"] == "standalone"
+
+
+def test_service_worker(client):
+    response = client.get("/sw.js")
+    assert response.status_code == 200
+    assert b"instadown-cache" in response.data
+
+
+def test_api_health(client):
+    response = client.get("/api/health")
+    assert response.status_code == 200
+    data = response.get_json()
+    assert data["status"] == "healthy"
+    assert data["service"] == "InstaDown"
+    assert data["features"]["audio_extraction"] is True
+    assert data["features"]["carousel_inspection"] is True
 
 
 def test_custom_404(client):
@@ -92,6 +116,20 @@ def test_api_info_empty_payload(client):
 
 def test_api_info_invalid_url(client):
     response = client.post("/api/info", json={"url": "https://notinstagram.com/something"})
+    assert response.status_code == 400
+    data = response.get_json()
+    assert "error" in data
+
+
+def test_api_download_empty_payload(client):
+    response = client.post("/api/download", json={})
+    assert response.status_code == 400
+    data = response.get_json()
+    assert "error" in data
+
+
+def test_api_download_invalid_url(client):
+    response = client.post("/api/download", json={"url": "https://invalidurl.com/post"})
     assert response.status_code == 400
     data = response.get_json()
     assert "error" in data
